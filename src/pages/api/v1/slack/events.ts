@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createHmac } from "node:crypto";
+import { z } from "zod";
+import { prisma } from "../../../../server/db/client";
 import { getEnvVar } from "../../../../utils/env";
 
 export const config = {
@@ -32,6 +34,24 @@ type HandleSlackEventsArgs = {
   res: NextApiResponse;
   json: unknown;
 };
+
+const slackMessageSubEvent = z.object({
+  // Non formatted message sent
+  // by slack
+  text: z.string(),
+
+  // userId who sent the message
+  user: z.string(),
+
+  // ts is the unique id of the message in the channel
+  ts: z.string(),
+
+  // teamId the message belongs to
+  team: z.string(),
+
+  // channelId the message was sent to
+  channel: z.string(),
+});
 
 const handleSlackEvent = async ({ req, res, json }: HandleSlackEventsArgs) => {
   const slackEvent = json as SlackEvent;
@@ -66,13 +86,30 @@ const handleSlackEvent = async ({ req, res, json }: HandleSlackEventsArgs) => {
   const subEvent = slackEvent.event;
 
   if (subEvent.type === "message") {
-    // This is the subevent slack sends when a message is sent in a channel.
+    const parsedSubEvent = slackMessageSubEvent.safeParse(subEvent);
 
-    const message = subEvent.text;
-    const userId = subEvent.user; // User who sent the message
-    const teamId = subEvent.team; // Team the message belongs
-    const channelId = subEvent.channel; // Channel the message was sent to
-    const ts = subEvent.ts; // Unqiue id of message in channel only
+    if (!parsedSubEvent.success) {
+      console.log("Unknown data format. Ignoring this event");
+      return;
+    }
+
+    const {
+      text: message,
+      user: userId,
+      ts,
+      team: teamId,
+      channel: channelId,
+    } = parsedSubEvent.data;
+
+    const prismaRes = await prisma.message.create({
+      data: {
+        slackChannelId: channelId,
+        slackMessage: message,
+        slackMessageTs: ts,
+        slackTeamId: teamId,
+        slackUserId: userId,
+      },
+    });
   }
 };
 
@@ -80,16 +117,16 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const body = await parseBody(req);
-  const isVerified = verifyRequestIsActuallyFromSlack(req, body.raw);
-
-  if (!isVerified) {
-    return res.status(401).send("Unauthorized");
-  }
-
   // Slack only sends POST request to the event url.
   // So we can send 404 response for all other methods.
   if (req.method === "POST") {
+    const body = await parseBody(req);
+    const isVerified = verifyRequestIsActuallyFromSlack(req, body.raw);
+
+    if (!isVerified) {
+      return res.status(401).send("Unauthorized");
+    }
+
     return handleSlackEvent({ req, res, json: body.json });
   }
 
