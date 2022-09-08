@@ -51,6 +51,10 @@ const slackMessageSubEvent = z.object({
 
   // channelId the message was sent to
   channel: z.string(),
+
+  // if the message is part of thread then this will be set
+  // and the value will be equal to the ts of the parent message
+  thread_ts: z.optional(z.string()),
 });
 
 const handleSlackEvent = async ({ req, res, json }: HandleSlackEventsArgs) => {
@@ -99,17 +103,41 @@ const handleSlackEvent = async ({ req, res, json }: HandleSlackEventsArgs) => {
       ts,
       team: teamId,
       channel: channelId,
+      thread_ts: slackThreadTs,
     } = parsedSubEvent.data;
 
-    const prismaRes = await prisma.message.create({
-      data: {
-        slackChannelId: channelId,
-        slackMessage: message,
-        slackMessageTs: ts,
-        slackTeamId: teamId,
-        slackUserId: userId,
-      },
-    });
+    const isPartOfThread = slackThreadTs !== undefined;
+
+    if (!isPartOfThread) {
+      await prisma.message.create({
+        data: {
+          slackChannelId: channelId,
+          slackMessage: message,
+          slackMessageTs: ts,
+          slackTeamId: teamId,
+          slackUserId: userId,
+        },
+      });
+    } else {
+      await prisma.reply.create({
+        data: {
+          slackChannelId: channelId,
+          slackMessage: message,
+          slackMessageTs: ts,
+          slackTeamId: teamId,
+          slackUserId: userId,
+          Message: {
+            connect: {
+              slackChannelId_slackMessageTs_slackTeamId: {
+                slackChannelId: channelId,
+                slackMessageTs: slackThreadTs,
+                slackTeamId: teamId,
+              },
+            },
+          },
+        },
+      });
+    }
   }
 };
 

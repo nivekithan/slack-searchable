@@ -19,4 +19,21 @@ model Message {
   slackMessageTs String
   slackTeamId    String
   slackChannelId String
+  replies        Reply[]
+
+  @@unique([slackChannelId, slackMessageTs, slackTeamId])
+}
+
+model Reply {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  slackMessage   String
+  slackUserId    String
+  slackMessageTs String
+  slackTeamId    String
+  slackChannelId String
+
+  Message   Message? @relation(fields: [messageId], references: [id])
+  messageId Int?
 }
