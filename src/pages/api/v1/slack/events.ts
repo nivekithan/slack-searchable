@@ -128,11 +128,13 @@ const handleSlackEvent = async ({ req, res, json }: HandleSlackEventsArgs) => {
           slackMessageTs: ts,
           slackUser,
           slackChannel,
+          id: nanoid(),
         },
       });
     } else {
       await prisma.reply.create({
         data: {
+          id: nanoid(),
           slackMessage: message,
           slackMessageTs: ts,
           slackUser,
@@ -283,11 +285,19 @@ const prismaSlackUser = async ({ teamId, userId }: PrismaSlackUserArgs) => {
      * prisma will do that for us automatically.
      */
     const slackUser: Prisma.SlackUserCreateNestedOneWithoutMessageInput = {
-      create: {
-        slackRealName: slackUserData.real_name,
-        slackUserId: userId,
-        slackTeamId: teamId,
-        id: nanoid(),
+      connectOrCreate: {
+        create: {
+          slackRealName: slackUserData.real_name,
+          slackUserId: userId,
+          slackTeamId: teamId,
+          id: nanoid(),
+        },
+        where: {
+          slackUserId_slackTeamId: {
+            slackTeamId: teamId,
+            slackUserId: userId,
+          },
+        },
       },
     };
 
@@ -348,11 +358,19 @@ const prismaSlackChannel = async ({
      */
     const slackChannel: Prisma.SlackChannelCreateNestedOneWithoutMessageInput =
       {
-        create: {
-          slackChannelId: channelId,
-          slackChannelName: slackChannelData.name,
-          slackTeamId: teamId,
-          id: nanoid(),
+        connectOrCreate: {
+          create: {
+            slackChannelId: channelId,
+            slackChannelName: slackChannelData.name,
+            slackTeamId: teamId,
+            id: nanoid(),
+          },
+          where: {
+            slackTeamId_slackChannelId: {
+              slackChannelId: channelId,
+              slackTeamId: teamId,
+            },
+          },
         },
       };
 

@@ -11,12 +11,12 @@ datasource db {
 }
 
 model Message {
-  id        Int      @id @default(autoincrement())
+  id        String      @id 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  replies   Reply[]
-  slackUser SlackUser @relation(fields: [slackUserId, slackTeamId], references: [slackUserId, slackTeamId])
+  replies      Reply[]
+  slackUser    SlackUser    @relation(fields: [slackUserId, slackTeamId], references: [slackUserId, slackTeamId])
   slackChannel SlackChannel @relation(fields: [slackTeamId, slackChannelId], references: [slackTeamId, slackChannelId])
 
   slackMessage   String
@@ -30,14 +30,13 @@ model Message {
 }
 
 model Reply {
-  id        Int      @id @default(autoincrement())
+  id        String      @id 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  slackUser SlackUser @relation(fields: [slackUserId, slackTeamId], references: [slackUserId, slackTeamId])
-  message   Message   @relation(fields: [messageId], references: [id])
+  slackUser    SlackUser    @relation(fields: [slackUserId, slackTeamId], references: [slackUserId, slackTeamId])
+  message      Message      @relation(fields: [messageId], references: [id])
   slackChannel SlackChannel @relation(fields: [slackTeamId, slackChannelId], references: [slackTeamId, slackChannelId])
-
 
   slackMessage String
   slackUserId  String
@@ -46,7 +45,7 @@ model Reply {
   slackChannelId String
   slackTeamId    String
 
-  messageId Int
+  messageId String
 
   @@unique([slackChannelId, slackMessageTs, slackTeamId])
 }
@@ -65,18 +64,16 @@ model SlackUser {
   @@unique([slackUserId, slackTeamId])
 }
 
-
 model SlackChannel {
-  id String @id
+  id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   slackChannelName String
-  message Message[]
-  replies Reply[]
+  message          Message[]
+  replies          Reply[]
 
-
-  slackTeamId String
+  slackTeamId    String
   slackChannelId String
 
   @@unique([slackTeamId, slackChannelId])
