@@ -1,4 +1,4 @@
-import { prisma } from "../db/client";
+import { prisma } from "../prisma";
 
 export type SlackChannelInfoArgs = {
   slackTeamId: string;

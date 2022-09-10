@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createHmac } from "node:crypto";
 import { z } from "zod";
-import { prisma } from "../../../../server/db/client";
+import { prisma } from "../../../../server/prisma";
 import { getEnvVar } from "../../../../utils/env";
 import { nanoid } from "nanoid";
 import { isSlackUserExists } from "../../../../server/lib/slackUser";
