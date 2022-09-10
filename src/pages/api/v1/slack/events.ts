@@ -3,6 +3,10 @@ import { createHmac } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "../../../../server/db/client";
 import { getEnvVar } from "../../../../utils/env";
+import { nanoid } from "nanoid";
+import { isSlackUserExists } from "../../../../server/lib/slackUser";
+import { Prisma } from "@prisma/client";
+import { getUserInfoFromSlack } from "../../../../server/slack";
 
 export const config = {
   api: {
@@ -108,14 +112,15 @@ const handleSlackEvent = async ({ req, res, json }: HandleSlackEventsArgs) => {
 
     const isPartOfThread = slackThreadTs !== undefined;
 
+    const slackUser = await prismaSlackUser({ teamId, userId });
+
     if (!isPartOfThread) {
       await prisma.message.create({
         data: {
           slackChannelId: channelId,
           slackMessage: message,
           slackMessageTs: ts,
-          slackTeamId: teamId,
-          slackUserId: userId,
+          slackUser,
         },
       });
     } else {
@@ -124,8 +129,7 @@ const handleSlackEvent = async ({ req, res, json }: HandleSlackEventsArgs) => {
           slackChannelId: channelId,
           slackMessage: message,
           slackMessageTs: ts,
-          slackTeamId: teamId,
-          slackUserId: userId,
+          slackUser,
           Message: {
             connect: {
               slackChannelId_slackMessageTs_slackTeamId: {
@@ -221,4 +225,65 @@ const verifyRequestIsActuallyFromSlack = (
   const actualSignatureHash = headers["x-slack-signature"];
 
   return expectedSignatureHash === actualSignatureHash;
+};
+
+type PrismaSlackUserArgs = { teamId: string; userId: string };
+
+/**
+ * Each message/reply is assoicated with a SlackUser. A slack user can be
+ * identified by slackUserId, slackTeamId, slackChannelId.
+ *
+ * So we will check the db to make sure that there already exist a user with
+ * the same slackUserId, slackTeamId, slackChannelId. if not that means this member
+ * has messaged for fist time since our app has been installed.
+ *
+ * So we will get required data (real_name) using slack_api and then store the
+ * data in db.
+ *
+ */
+const prismaSlackUser = async ({ teamId, userId }: PrismaSlackUserArgs) => {
+  const isSlackUserPresent = await isSlackUserExists({
+    slackTeamId: teamId,
+    slackUserId: userId,
+  });
+
+  if (isSlackUserPresent) {
+    /**
+     * Since a slackUser is already present in the db. We will connect
+     * our message/reply to that user.
+     */
+    const slackUser: Prisma.SlackUserCreateNestedOneWithoutMessageInput = {
+      connect: {
+        slackUserId_slackTeamId: {
+          slackTeamId: teamId,
+          slackUserId: userId,
+        },
+      },
+    };
+
+    return slackUser;
+  } else {
+    const slackUserData = await getUserInfoFromSlack({
+      slackToken: getEnvVar("SLACK_BOT_USER_TOKEN"),
+      userId: userId,
+    });
+
+    if (slackUserData instanceof Error) {
+      throw slackUserData;
+    }
+    /**
+     * We don't have to create a slackUser in db ourselves. By using `create` option.
+     * prisma will do that for us automatically.
+     */
+    const slackUser: Prisma.SlackUserCreateNestedOneWithoutMessageInput = {
+      create: {
+        slackRealName: slackUserData.real_name,
+        slackUserId: userId,
+        slackTeamId: teamId,
+        id: nanoid(),
+      },
+    };
+
+    return slackUser;
+  }
 };

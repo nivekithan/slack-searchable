@@ -11,29 +11,53 @@ datasource db {
 }
 
 model Message {
-  id             Int      @id @default(autoincrement())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  replies   Reply[]
+  slackUser SlackUser @relation(fields: [slackUserId, slackTeamId], references: [slackUserId, slackTeamId])
+
   slackMessage   String
-  slackUserId    String
   slackMessageTs String
-  slackTeamId    String
   slackChannelId String
-  replies        Reply[]
+
+  slackUserId String
+  slackTeamId String
 
   @@unique([slackChannelId, slackMessageTs, slackTeamId])
 }
 
 model Reply {
-  id             Int      @id @default(autoincrement())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  slackMessage   String
-  slackUserId    String
-  slackMessageTs String
-  slackTeamId    String
-  slackChannelId String
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  Message   Message? @relation(fields: [messageId], references: [id])
-  messageId Int?
+  slackUser SlackUser @relation(fields: [slackUserId, slackTeamId], references: [slackUserId, slackTeamId])
+  Message   Message   @relation(fields: [messageId], references: [id])
+
+  slackMessage String
+  slackUserId  String
+
+  slackMessageTs String
+  slackChannelId String
+  slackTeamId    String
+
+  messageId Int
+
+  @@unique([slackChannelId, slackMessageTs, slackTeamId])
+}
+
+model SlackUser {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  slackUserId   String
+  slackTeamId   String
+  slackRealName String
+  Message       Message[]
+  replies       Reply[]
+
+  @@unique([slackUserId, slackTeamId])
 }

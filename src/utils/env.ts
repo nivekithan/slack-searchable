@@ -1,4 +1,4 @@
-export type EnvVarName = "SLACK_SIGNING_SECRET";
+export type EnvVarName = "SLACK_SIGNING_SECRET" | "SLACK_BOT_USER_TOKEN";
 
 export const getEnvVar = (key: EnvVarName) => {
   const varValue = process.env[key];
