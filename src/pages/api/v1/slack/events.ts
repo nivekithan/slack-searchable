@@ -6,7 +6,11 @@ import { getEnvVar } from "../../../../utils/env";
 import { nanoid } from "nanoid";
 import { isSlackUserExists } from "../../../../server/lib/slackUser";
 import { Prisma } from "@prisma/client";
-import { getUserInfoFromSlack } from "../../../../server/slack";
+import {
+  getChannelInfoFromSlack,
+  getUserInfoFromSlack,
+} from "../../../../server/slack";
+import { isSlackChannelExists } from "../../../../server/lib/slackChannel";
 
 export const config = {
   api: {
@@ -112,25 +116,28 @@ const handleSlackEvent = async ({ req, res, json }: HandleSlackEventsArgs) => {
 
     const isPartOfThread = slackThreadTs !== undefined;
 
-    const slackUser = await prismaSlackUser({ teamId, userId });
+    const [slackUser, slackChannel] = await Promise.all([
+      prismaSlackUser({ teamId, userId }),
+      prismaSlackChannel({ channelId, teamId }),
+    ]);
 
     if (!isPartOfThread) {
       await prisma.message.create({
         data: {
-          slackChannelId: channelId,
           slackMessage: message,
           slackMessageTs: ts,
           slackUser,
+          slackChannel,
         },
       });
     } else {
       await prisma.reply.create({
         data: {
-          slackChannelId: channelId,
           slackMessage: message,
           slackMessageTs: ts,
           slackUser,
-          Message: {
+          slackChannel,
+          message: {
             connect: {
               slackChannelId_slackMessageTs_slackTeamId: {
                 slackChannelId: channelId,
@@ -231,10 +238,10 @@ type PrismaSlackUserArgs = { teamId: string; userId: string };
 
 /**
  * Each message/reply is assoicated with a SlackUser. A slack user can be
- * identified by slackUserId, slackTeamId, slackChannelId.
+ * identified by slackUserId, slackTeamId.
  *
  * So we will check the db to make sure that there already exist a user with
- * the same slackUserId, slackTeamId, slackChannelId. if not that means this member
+ * the same slackUserId, slackTeamId. if not that means this member
  * has messaged for fist time since our app has been installed.
  *
  * So we will get required data (real_name) using slack_api and then store the
@@ -285,5 +292,70 @@ const prismaSlackUser = async ({ teamId, userId }: PrismaSlackUserArgs) => {
     };
 
     return slackUser;
+  }
+};
+
+type PrismaSlackChannelArgs = { teamId: string; channelId: string };
+/**
+ * Each message/reply is assoicated with a SlackChannel. A slack channel can be
+ * identified by slackTeamId, slackChannelId.
+ *
+ * So we will check the db to make sure that there already exist a user with
+ * the same slackTeamId, slackChannelId. if not that means this channel
+ * has been messaged for fist time since our app has been installed.
+ *
+ * So we will get required data using slack_api and then store the
+ * data in db.
+ *
+ */
+const prismaSlackChannel = async ({
+  teamId,
+  channelId,
+}: PrismaSlackChannelArgs) => {
+  const isSlackChannelPresent = await isSlackChannelExists({
+    slackTeamId: teamId,
+    slackChannelId: channelId,
+  });
+
+  if (isSlackChannelPresent) {
+    /**
+     * Since a slackChannel is already present in the db. We will connect
+     * our message/reply to that channel.
+     */
+    const slackChannel: Prisma.SlackChannelCreateNestedOneWithoutMessageInput =
+      {
+        connect: {
+          slackTeamId_slackChannelId: {
+            slackChannelId: channelId,
+            slackTeamId: teamId,
+          },
+        },
+      };
+
+    return slackChannel;
+  } else {
+    const slackChannelData = await getChannelInfoFromSlack({
+      slackToken: getEnvVar("SLACK_BOT_USER_TOKEN"),
+      channelId: channelId,
+    });
+
+    if (slackChannelData instanceof Error) {
+      throw slackChannelData;
+    }
+    /**
+     * We don't have to create a slackChannel in db ourselves. By using `create` option.
+     * prisma will do that for us automatically.
+     */
+    const slackChannel: Prisma.SlackChannelCreateNestedOneWithoutMessageInput =
+      {
+        create: {
+          slackChannelId: channelId,
+          slackChannelName: slackChannelData.name,
+          slackTeamId: teamId,
+          id: nanoid(),
+        },
+      };
+
+    return slackChannel;
   }
 };

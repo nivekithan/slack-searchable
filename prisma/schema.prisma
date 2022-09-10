@@ -17,6 +17,7 @@ model Message {
 
   replies   Reply[]
   slackUser SlackUser @relation(fields: [slackUserId, slackTeamId], references: [slackUserId, slackTeamId])
+  slackChannel SlackChannel @relation(fields: [slackTeamId, slackChannelId], references: [slackTeamId, slackChannelId])
 
   slackMessage   String
   slackMessageTs String
@@ -34,7 +35,9 @@ model Reply {
   updatedAt DateTime @updatedAt
 
   slackUser SlackUser @relation(fields: [slackUserId, slackTeamId], references: [slackUserId, slackTeamId])
-  Message   Message   @relation(fields: [messageId], references: [id])
+  message   Message   @relation(fields: [messageId], references: [id])
+  slackChannel SlackChannel @relation(fields: [slackTeamId, slackChannelId], references: [slackTeamId, slackChannelId])
+
 
   slackMessage String
   slackUserId  String
@@ -60,4 +63,21 @@ model SlackUser {
   replies       Reply[]
 
   @@unique([slackUserId, slackTeamId])
+}
+
+
+model SlackChannel {
+  id String @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  slackChannelName String
+  message Message[]
+  replies Reply[]
+
+
+  slackTeamId String
+  slackChannelId String
+
+  @@unique([slackTeamId, slackChannelId])
 }
