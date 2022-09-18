@@ -17,6 +17,7 @@ specifiers:
   prisma: ^4.3.1
   react: 18.2.0
   react-dom: 18.2.0
+  s-ago: ^2.2.0
   tailwindcss: ^3.1.8
   typescript: 4.7.4
   zod: ^3.19.0
@@ -28,6 +29,7 @@ dependencies:
   next: 12.2.5_react-dom@18.2.0+react@18.2.0
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
+  s-ago: 2.2.0
   zod: 3.19.0
 
 devDependencies:
@@ -2141,6 +2143,10 @@ packages:
     dependencies:
       queue-microtask: 1.2.3
     dev: true
+
+  /s-ago/2.2.0:
+    resolution: {integrity: sha512-t6Q/aFCCJSBf5UUkR/WH0mDHX8EGm2IBQ7nQLobVLsdxOlkryYMbOlwu2D4Cf7jPUp0v1LhfPgvIZNoi9k8lUA==}
+    dev: false
 
   /scheduler/0.23.0:
     resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
