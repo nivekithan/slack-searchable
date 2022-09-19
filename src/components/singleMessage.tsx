@@ -1,12 +1,20 @@
 import ago from "s-ago";
 
-export type MessageProps = {
+export type SingleMessageProps = {
   message: string;
   userName: string;
   createdAt: Date;
 };
 
-export const Message = ({ message, userName, createdAt }: MessageProps) => {
+/**
+ * Renders only single message. It could be start of thread or else
+ * it could be one of the replies.
+ */
+export const SingleMessage = ({
+  message,
+  userName,
+  createdAt,
+}: SingleMessageProps) => {
   return (
     <div className="flex gap-y-3 flex-col text-sm">
       <div className="flex items-center justify-between">
