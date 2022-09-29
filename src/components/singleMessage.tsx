@@ -17,11 +17,9 @@ export const SingleMessage = ({
 }: SingleMessageProps) => {
   return (
     <div className="flex gap-y-3 flex-col text-sm">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-x-3">
-          <Avatar userName={userName} />
-          <h4 className="font-semibold">{userName}</h4>
-        </div>
+      <div className="flex items-center gap-x-3">
+        <Avatar userName={userName} />
+        <h4 className="font-semibold">{userName}</h4>
         <CreatedAt createdAt={createdAt} />
       </div>
       <p>{message}</p>
