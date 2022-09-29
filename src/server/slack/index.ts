@@ -1,5 +1,6 @@
 import { WebClient } from "@slack/web-api";
 import { z } from "zod";
+import { prisma } from "../prisma";
 
 const slackUserSchema = z.object({
   // userId for the user
@@ -64,4 +65,38 @@ export const getChannelInfoFromSlack = async ({
   } catch (err) {
     return new Error("Error getting channel info from Slack", { cause: err });
   }
+};
+
+export type GetAllChannelsInTeamArgs = {
+  teamId: string;
+};
+
+export const getAllChannelsInTeam = async ({
+  teamId,
+}: GetAllChannelsInTeamArgs) => {
+  const channels = await prisma.slackChannel.findMany({
+    where: { slackTeamId: teamId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return channels;
+};
+
+export type GetChannelMessagesWithUserArgs = {
+  teamId: string;
+  channelId: string;
+};
+export const getMessagesWithUser = async ({
+  teamId,
+  channelId,
+}: GetChannelMessagesWithUserArgs) => {
+  const messages = await prisma.message.findMany({
+    where: { slackTeamId: teamId, slackChannelId: channelId },
+    include: {
+      slackUser: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return messages;
 };

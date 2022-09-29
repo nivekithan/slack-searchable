@@ -1,8 +1,12 @@
 import { Message, Reply, SlackUser } from "@prisma/client";
 
-export type MessageWithUserAndReplies = Message & {
+export type MessageWithUser = Message & {
   slackUser: SlackUser;
-  replies: (Reply & {
-    slackUser: SlackUser;
-  })[];
 };
+
+export type MessageWithUserAndReplies = Message &
+  MessageWithUser & {
+    replies: (Reply & {
+      slackUser: SlackUser;
+    })[];
+  };
