@@ -18,7 +18,7 @@ model Message {
   replies      Reply[]
   slackUser    SlackUser    @relation(fields: [slackUserId, slackTeamId], references: [slackUserId, slackTeamId])
   slackChannel SlackChannel @relation(fields: [slackTeamId, slackChannelId], references: [slackTeamId, slackChannelId])
-
+  sortKey Int @unique @default(autoincrement())
   slackMessage   String
   slackMessageTs String
   slackChannelId String

@@ -85,10 +85,14 @@ export const getAllChannelsInTeam = async ({
 export type GetChannelMessagesWithUserArgs = {
   teamId: string;
   channelId: string;
+  take: number;
+  skip?: number;
 };
 export const getMessagesWithUser = async ({
   teamId,
   channelId,
+  take,
+  skip,
 }: GetChannelMessagesWithUserArgs) => {
   const messages = await prisma.message.findMany({
     where: { slackTeamId: teamId, slackChannelId: channelId },
@@ -96,6 +100,8 @@ export const getMessagesWithUser = async ({
       slackUser: true,
     },
     orderBy: { createdAt: "desc" },
+    take: take,
+    skip: skip,
   });
 
   return messages;
