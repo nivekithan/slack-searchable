@@ -124,11 +124,10 @@ export const RenderChannel: NextPage<ServerSideProps> = ({
     <div className="flex flex-col gap-y-12">
       <div className="flex flex-col gap-y-4">
         {messages.map((message) => {
-          const replyHref = `/t/${teamId}/c/${channelId}/${message.id}`;
+          const replyHref = `/t/${teamId}/c/${channelId}/${message.slackMessageTs}`;
           return (
-            <div className="flex flex-col gap-y-8">
+            <div className="flex flex-col gap-y-8" key={message.id}>
               <SingleMessage
-                key={message.id}
                 createdAt={message.createdAt}
                 message={message.slackMessage}
                 userName={message.slackUser.slackRealName}

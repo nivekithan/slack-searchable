@@ -106,3 +106,33 @@ export const getMessagesWithUser = async ({
 
   return messages;
 };
+
+export type GetAMessageWithRepliesAndUserArgs = {
+  teamId: string;
+  channelId: string;
+  messageTs: string;
+};
+
+export const getAMessageWithRepliesAndUser = async ({
+  channelId,
+  messageTs,
+  teamId,
+}: GetAMessageWithRepliesAndUserArgs) => {
+  const messages = prisma.message.findUnique({
+    where: {
+      slackChannelId_slackMessageTs_slackTeamId: {
+        slackChannelId: channelId,
+        slackMessageTs: messageTs,
+        slackTeamId: teamId,
+      },
+    },
+    include: {
+      replies: {
+        include: { slackUser: true },
+      },
+      slackUser: true,
+    },
+  });
+
+  return messages;
+};
