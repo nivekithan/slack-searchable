@@ -2,6 +2,7 @@ import { SlackChannel } from "@prisma/client";
 import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import { ChangeChannelsOption } from "../../../../../components/changeChannels";
+import { LayoutWithChannels } from "../../../../../components/layouts/layoutWithChannels";
 import { Thread } from "../../../../../components/thread";
 import {
   getAllChannelsInTeam,
@@ -46,27 +47,16 @@ export const getServerSideProps: GetServerSideProps<ServerSideProps> = async (
 };
 
 const RenderThread: NextPage<ServerSideProps> = ({ thread, channels }) => {
-  const router = useRouter();
-  const { teamId, channelId } = router.query as {
-    teamId: string;
-    channelId: string;
-  };
-
   return (
-    <div>
-      <div className="mx-3">
+    <LayoutWithChannels channels={channels}>
+      <div className="flex flex-col gap-y-4">
+        <div>
+          <h3 className="text-md font-bold">Thread</h3>
+          <div className="border-b-2 mt-2"></div>
+        </div>
         <Thread thread={thread} />
       </div>
-      <div className="absolute bottom-0 w-full">
-        <div className="mx-3">
-          <ChangeChannelsOption
-            channels={channels}
-            currentChannelId={channelId}
-            teamId={teamId}
-          />
-        </div>
-      </div>
-    </div>
+    </LayoutWithChannels>
   );
 };
 

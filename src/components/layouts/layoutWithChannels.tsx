@@ -27,7 +27,7 @@ export const LayoutWithChannels = ({
           teamId={teamId}
         />
       </div>
-      <div className="md:mx-8 w-full">{children}</div>
+      <div className="px-3 w-full">{children}</div>
       <div className="absolute bottom-0 w-full border-t p-3 md:hidden">
         <ChangeChannelsOption
           channels={channels}

@@ -28,7 +28,7 @@ export const ChangeChannelsOption = ({
   return (
     <form className="flex flex-col gap-y-2">
       <label htmlFor="choose-slack-channel" className="font-bold">
-        Choose channel
+        Choose Channel
       </label>
       <select
         id="choose-slack-channel"
@@ -56,7 +56,7 @@ export const ChangeChannelsList = ({
   return (
     <div className="flex flex-col gap-y-4">
       <div>
-        <h3 className="font-bold">Choose Channel</h3>
+        <h3 className="font-bold text-md">Choose Channel</h3>
         <div className="border-b-2 mt-2"></div>
       </div>
       {channels.map((channel) => {
