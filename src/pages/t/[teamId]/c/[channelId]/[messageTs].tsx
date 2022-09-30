@@ -1,7 +1,7 @@
 import { SlackChannel } from "@prisma/client";
 import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
-import { ChangeChannels } from "../../../../../components/changeChannels";
+import { ChangeChannelsOption } from "../../../../../components/changeChannels";
 import { Thread } from "../../../../../components/thread";
 import {
   getAllChannelsInTeam,
@@ -54,13 +54,17 @@ const RenderThread: NextPage<ServerSideProps> = ({ thread, channels }) => {
 
   return (
     <div>
-      <Thread thread={thread} />
+      <div className="mx-3">
+        <Thread thread={thread} />
+      </div>
       <div className="absolute bottom-0 w-full">
-        <ChangeChannels
-          channels={channels}
-          currentChannelId={channelId}
-          teamId={teamId}
-        />
+        <div className="mx-3">
+          <ChangeChannelsOption
+            channels={channels}
+            currentChannelId={channelId}
+            teamId={teamId}
+          />
+        </div>
       </div>
     </div>
   );

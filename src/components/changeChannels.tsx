@@ -1,4 +1,5 @@
 import { SlackChannel } from "@prisma/client";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { ChangeEvent } from "react";
 
@@ -7,7 +8,7 @@ export type ChangeChannelsProps = {
   teamId: string;
   currentChannelId: string;
 };
-export const ChangeChannels = ({
+export const ChangeChannelsOption = ({
   channels,
   teamId,
   currentChannelId,
@@ -25,7 +26,7 @@ export const ChangeChannels = ({
   };
 
   return (
-    <form className="flex flex-col border-t px-3 py-2 gap-y-2">
+    <form className="flex flex-col gap-y-2">
       <label htmlFor="choose-slack-channel" className="font-bold">
         Choose channel
       </label>
@@ -44,5 +45,39 @@ export const ChangeChannels = ({
         })}
       </select>
     </form>
+  );
+};
+
+export const ChangeChannelsList = ({
+  channels,
+  currentChannelId,
+  teamId,
+}: ChangeChannelsProps) => {
+  return (
+    <div className="flex flex-col gap-y-4">
+      <div>
+        <h3 className="font-bold">Choose Channel</h3>
+        <div className="border-b-2 mt-2"></div>
+      </div>
+      {channels.map((channel) => {
+        const channelHref = `/t/${teamId}/c/${channel.slackChannelId}`;
+        const isChannelActive = currentChannelId === channel.slackChannelId;
+
+        const channelActiveStyle = isChannelActive
+          ? "text-blue-500 font-semibold"
+          : "";
+
+        return (
+          <Link href={channelHref}>
+            <a
+              className={`hover:text-blue-500 hover:underline flex gap-x-2 ${channelActiveStyle}`}
+            >
+              <span>#</span>
+              {channel.slackChannelName}
+            </a>
+          </Link>
+        );
+      })}
+    </div>
   );
 };

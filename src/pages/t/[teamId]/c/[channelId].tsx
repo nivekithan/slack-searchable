@@ -2,7 +2,8 @@ import { SlackChannel } from "@prisma/client";
 import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { ChangeChannels } from "../../../../components/changeChannels";
+import { ChangeChannelsOption } from "../../../../components/changeChannels";
+import { LayoutWithChannels } from "../../../../components/layouts/layoutWithChannels";
 import { SingleMessage } from "../../../../components/singleMessage";
 import {
   getAllChannelsInTeam,
@@ -121,40 +122,35 @@ export const RenderChannel: NextPage<ServerSideProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-y-12">
-      <div className="flex flex-col gap-y-4">
-        {messages.map((message) => {
-          const replyHref = `/t/${teamId}/c/${channelId}/${message.slackMessageTs}`;
-          return (
-            <div className="flex flex-col gap-y-8" key={message.id}>
-              <SingleMessage
-                createdAt={message.createdAt}
-                message={message.slackMessage}
-                userName={message.slackUser.slackRealName}
-              />
-              <Link href={replyHref}>
-                <a className="text-sm text-blue-600 hover:underline  w-fit hover:rounded">
-                  Show Replies
-                </a>
-              </Link>
-            </div>
-          );
-        })}
-      </div>
-      <Pagination
-        nextSkip={nextSkip}
-        prevSkip={prevSkip}
-        channelId={channelId}
-        teamId={teamId}
-      />
-      <div className="absolute bottom-0 w-full">
-        <ChangeChannels
-          channels={channels}
-          currentChannelId={channelId}
+    <LayoutWithChannels channels={channels}>
+      <div className="flex flex-col gap-y-8">
+        <div className="flex flex-col gap-y-4">
+          {messages.map((message) => {
+            const replyHref = `/t/${teamId}/c/${channelId}/${message.slackMessageTs}`;
+            return (
+              <div className="flex flex-col gap-y-4" key={message.id}>
+                <SingleMessage
+                  createdAt={message.createdAt}
+                  message={message.slackMessage}
+                  userName={message.slackUser.slackRealName}
+                />
+                <Link href={replyHref}>
+                  <a className="text-sm text-blue-600 hover:underline  w-fit hover:rounded">
+                    Show Replies
+                  </a>
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+        <Pagination
+          nextSkip={nextSkip}
+          prevSkip={prevSkip}
+          channelId={channelId}
           teamId={teamId}
         />
       </div>
-    </div>
+    </LayoutWithChannels>
   );
 };
 
