@@ -121,27 +121,33 @@ export const RenderChannel: NextPage<ServerSideProps> = ({
   };
 
   return (
-    <div>
-      <div className="flex flex-col gap-y-8">
+    <div className="flex flex-col gap-y-12">
+      <div className="flex flex-col gap-y-4">
         {messages.map((message) => {
+          const replyHref = `/t/${teamId}/c/${channelId}/${message.id}`;
           return (
-            <SingleMessage
-              key={message.id}
-              createdAt={message.createdAt}
-              message={message.slackMessage}
-              userName={message.slackUser.slackRealName}
-            />
+            <div className="flex flex-col gap-y-8">
+              <SingleMessage
+                key={message.id}
+                createdAt={message.createdAt}
+                message={message.slackMessage}
+                userName={message.slackUser.slackRealName}
+              />
+              <Link href={replyHref}>
+                <a className="text-sm text-blue-600 hover:underline  w-fit hover:rounded">
+                  Show Replies
+                </a>
+              </Link>
+            </div>
           );
         })}
       </div>
-      <div className="flex items-center justify-center">
-        <Pagination
-          nextSkip={nextSkip}
-          prevSkip={prevSkip}
-          channelId={channelId}
-          teamId={teamId}
-        />
-      </div>
+      <Pagination
+        nextSkip={nextSkip}
+        prevSkip={prevSkip}
+        channelId={channelId}
+        teamId={teamId}
+      />
       <div className="absolute bottom-0 w-full">
         <ChangeChannels
           channels={channels}
@@ -169,7 +175,7 @@ const Pagination = ({
   const pathName = `/t/${teamId}/c/${channelId}`;
 
   return (
-    <div className="flex gap-x-4">
+    <div className="flex items-center justify-between">
       <ChangeSkip
         newSkip={prevSkip}
         pathName={pathName}
