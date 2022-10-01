@@ -125,6 +125,10 @@ export const RenderChannel: NextPage<ServerSideProps> = ({
     <LayoutWithChannels channels={channels}>
       <div className="flex flex-col gap-y-8">
         <div className="flex flex-col gap-y-4">
+          <div>
+            <h3 className="text-md font-bold">Topics</h3>
+            <div className="border-t-2 mt-2"></div>
+          </div>
           {messages.map((message) => {
             const replyHref = `/t/${teamId}/c/${channelId}/${message.slackMessageTs}`;
             return (
@@ -199,7 +203,6 @@ const ChangeSkip = ({ newSkip, text, pathName, query }: ChangeSkipProps) => {
   const isNewSkipAvaliable = newSkip !== null;
 
   const commonStyling = "border rounded-md text-md px-3 py-2";
-
   const ToFirstPage = (
     <div className={`${commonStyling} hover:border-blue-600`}>
       <Link href={{ pathname: pathName }}>

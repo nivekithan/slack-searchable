@@ -78,3 +78,16 @@ model SlackChannel {
 
   @@unique([slackTeamId, slackChannelId])
 }
+
+
+model Settings {
+  id String @id 
+  createdAt DateTime @default(now())
+  upatedAt DateTime @updatedAt
+
+  
+  maskSlackUserName Boolean @default(false)
+  
+  slackTeamId String @unique
+
+}

@@ -136,3 +136,12 @@ export const getAMessageWithRepliesAndUser = async ({
 
   return messages;
 };
+
+export type GetSettingsForTeamArgs = {
+  teamId: string;
+};
+export const getSettingsForTeam = async ({
+  teamId,
+}: GetSettingsForTeamArgs) => {
+  return prisma.settings.findUnique({ where: { slackTeamId: teamId } });
+};
